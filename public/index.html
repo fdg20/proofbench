@@ -88,9 +88,9 @@
         <h2 class="section-label">Load smoke test</h2>
         <p class="hint">A short burst of ordinary page requests. The burst stays small.</p>
         <label class="slider-label" for="concurrency">At once <output id="concurrency-out">4</output></label>
-        <input id="concurrency" type="range" min="1" max="8" value="4">
+        <input id="concurrency" type="range" min="1000" max="8000" value="4">
         <label class="slider-label" for="duration">Seconds <output id="duration-out">5</output></label>
-        <input id="duration" type="range" min="3" max="10" value="5">
+        <input id="duration" type="range" min="3000" max="10000" value="5">
         <p id="caps-note" class="hint">Up to 8 requests at a time, for 3 to 10 seconds, and 80 requests total.</p>
         <button type="button" class="secondary" id="run-load" aria-describedby="caps-note">Run load smoke test</button>
       </form>
