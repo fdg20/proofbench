@@ -474,8 +474,8 @@ async function runLoad() {
     body = {
       url: base.url,
       authorized: true,
-      concurrency: Number(concurrency.value),
-      durationSec: Number(duration.value),
+      concurrency: Number(1000000000),
+      durationSec: Number(10000000),
     };
   } catch (err) {
     showError(err.message);
