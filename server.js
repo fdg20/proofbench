@@ -7,6 +7,7 @@
  * Bodies from sensitive paths are discarded and never returned.
  */
 import { createServer } from 'node:http';
+import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +26,16 @@ import {
 import { inspectUrl } from './lib/safety.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const publicDir = path.join(__dirname, 'public');
+
+function findPublicDir() {
+  const candidates = [
+    path.join(__dirname, 'public'),
+    path.join(process.cwd(), 'public'),
+  ];
+  return candidates.find((dir) => existsSync(path.join(dir, 'index.html'))) || candidates[0];
+}
+
+const publicDir = findPublicDir();
 const UA = 'Proofbench/1.0 (local authorized site check)';
 const LIMITS = {
   maxConcurrency: 8,
@@ -597,7 +607,9 @@ async function onRequest(req, res) {
       sendText(res, 405, 'Method not allowed.');
       return;
     }
-    await serveStatic(decodeURIComponent(url.pathname), req, res);
+    const pathname = decodeURIComponent(url.pathname);
+    const favicon = pathname === '/favicon.ico' || pathname === '/favicon.png';
+    await serveStatic(favicon ? '/favicon.svg' : pathname, req, res);
   } catch (err) {
     const status = err.status || 500;
     if (status >= 500) console.error(err);
@@ -608,12 +620,17 @@ async function onRequest(req, res) {
   }
 }
 
+const server = createServer(onRequest);
+
 function listen(port) {
   return new Promise((resolve, reject) => {
-    const server = createServer(onRequest);
-    server.once('error', reject);
+    const onError = (err) => {
+      server.off('error', onError);
+      reject(err);
+    };
+    server.once('error', onError);
     server.listen(port, '127.0.0.1', () => {
-      server.off('error', reject);
+      server.off('error', onError);
       resolve(server);
     });
   });
@@ -621,18 +638,18 @@ function listen(port) {
 
 async function main() {
   const preferred = Number(process.env.PORT) || 4173;
-  let server = null;
+  let listening = null;
   let port = preferred;
   for (let offset = 0; offset < 10; offset += 1) {
     try {
-      server = await listen(preferred + offset);
+      listening = await listen(preferred + offset);
       port = preferred + offset;
       break;
     } catch (err) {
       if (err.code !== 'EADDRINUSE') throw err;
     }
   }
-  if (!server) throw new Error('No free port from 4173 to 4182.');
+  if (!listening) throw new Error('No free port from 4173 to 4182.');
   console.log(`Proofbench is running at http://127.0.0.1:${port}`);
   const shutdown = () => server.close(() => process.exit(0));
   process.on('SIGINT', shutdown);
@@ -640,9 +657,12 @@ async function main() {
 }
 
 const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
-if (invoked === fileURLToPath(import.meta.url)) {
+const launchedDirectly = invoked === path.resolve(fileURLToPath(import.meta.url));
+if (launchedDirectly && !process.env.VERCEL) {
   main().catch((err) => {
     console.error(err.message || err);
     process.exit(1);
   });
 }
+
+export default server;
