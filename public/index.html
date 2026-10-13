@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0e6b52">
+  <title>Proofbench — local site checks</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230e6b52'/%3E%3Cpath d='M8 16.5l5 5 11-12' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip" href="#results">Skip to results</a>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 36 36" aria-hidden="true">
+          <rect width="36" height="36" rx="8" fill="#0e6b52"></rect>
+          <path d="M10 18.5l5 5 11-12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <div>
+          <p class="local-flag">Local bench</p>
+          <h1>Proofbench</h1>
+        </div>
+      </div>
+      <p class="intro">Security headers, public files, page quality, performance, and a small load smoke test. Point it only at a site you own or have written permission to test.</p>
+    </header>
+
+    <main class="layout">
+      <form id="audit-form" class="panel" novalidate>
+        <label class="field" for="url">
+          <span>Site URL</span>
+          <input id="url" name="url" type="url" inputmode="url" spellcheck="false" placeholder="https://example.com" autocomplete="url">
+        </label>
+        <button type="button" class="text-button" id="use-sample">Use the practice page on this computer</button>
+
+        <label class="auth">
+          <input id="authorized" type="checkbox">
+          <span>
+            <strong>I am allowed to test this site.</strong>
+            <small>I own it, or I have written permission. Checks run as a logged-out visitor.</small>
+          </span>
+        </label>
+
+        <fieldset>
+          <legend>Checks</legend>
+          <label class="check">
+            <input id="check-security" type="checkbox" checked>
+            <span>
+              <strong>Security headers</strong>
+              <small>HSTS, content security policy, clickjacking, cookies, and related settings.</small>
+            </span>
+          </label>
+          <label class="check">
+            <input id="check-exposure" type="checkbox" checked>
+            <span>
+              <strong>Public files</strong>
+              <small>A short fixed list of sensitive paths. Contents are not saved.</small>
+            </span>
+          </label>
+          <label class="check">
+            <input id="check-quality" type="checkbox" checked>
+            <span>
+              <strong>Page quality</strong>
+              <small>Title, description, headings, image text, and form labels.</small>
+            </span>
+          </label>
+          <label class="check">
+            <input id="check-performance" type="checkbox" checked>
+            <span>
+              <strong>Performance</strong>
+              <small>Response time, size, and compression.</small>
+            </span>
+          </label>
+          <label class="check">
+            <input id="check-links" type="checkbox" checked>
+            <span>
+              <strong>Same-site links</strong>
+              <small>Up to 12 links that stay on the same host.</small>
+            </span>
+          </label>
+        </fieldset>
+
+        <p id="form-error" class="form-error" role="alert" hidden></p>
+        <button type="submit" class="primary" id="run-audit">Run checks</button>
+
+        <hr>
+        <h2 class="section-label">Load smoke test</h2>
+        <p class="hint">A short burst of ordinary page requests. The burst stays small.</p>
+        <label class="slider-label" for="concurrency">At once <output id="concurrency-out">4</output></label>
+        <input id="concurrency" type="range" min="1" max="8" value="4">
+        <label class="slider-label" for="duration">Seconds <output id="duration-out">5</output></label>
+        <input id="duration" type="range" min="3" max="10" value="5">
+        <p id="caps-note" class="hint">Up to 8 requests at a time, for 3 to 10 seconds, and 80 requests total.</p>
+        <button type="button" class="secondary" id="run-load" aria-describedby="caps-note">Run load smoke test</button>
+      </form>
+
+      <section id="results" class="results" aria-live="polite"></section>
+    </main>
+
+    <footer>
+      <p>Runs on this computer only. Proofbench does not try passwords, send injection payloads, or flood a server. Sensitive responses are counted, not saved.</p>
+    </footer>
+  </div>
+  <noscript>Turn on JavaScript to use Proofbench. It only runs in your browser on this computer.</noscript>
+  <script src="/app.js" defer></script>
+</body>
+</html>
